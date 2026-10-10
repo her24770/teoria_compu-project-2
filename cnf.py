@@ -1,5 +1,4 @@
-"""Conversión de una gramática simplificada a Forma Normal de Chomsky.
-"""
+"""Conversión de una gramática simplificada a Forma Normal de Chomsky."""
 from __future__ import annotations
 
 from grammar import Grammar
@@ -14,22 +13,19 @@ def _symbols(g: Grammar) -> set[str]:
     return symbols
 
 
-def _fresh_variable(used: set[str], next_index: int) -> tuple[str, int]:
-    """Crea un nombre ``T_n`` que no colisione con ningún símbolo existente."""
-    while f"T_{next_index}" in used:
+def _fresh_variable(
+    prefix: str, used: set[str], next_index: int
+) -> tuple[str, int]:
+    """Crea un nombre auxiliar que no colisione con símbolos existentes."""
+    while f"{prefix}_{next_index}" in used:
         next_index += 1
-    name = f"T_{next_index}"
+    name = f"{prefix}_{next_index}"
     used.add(name)
     return name, next_index + 1
 
 
-def to_cnf_form(g: Grammar) -> Grammar:
-    """Reemplaza terminales dentro de cuerpos de longitud dos o mayor.
-
-    La entrada debe ser una gramática ya simplificada. La función construye
-    una gramática nueva y reutiliza la misma variable auxiliar cuando un
-    terminal aparece en varios cuerpos largos.
-    """
+def _replace_terminals(g: Grammar) -> Grammar:
+    """Reemplaza terminales dentro de cuerpos de longitud dos o mayor."""
     variables = set(g.productions)
     used = _symbols(g)
     terminal_variables: dict[str, str] = {}
@@ -51,7 +47,7 @@ def to_cnf_form(g: Grammar) -> Grammar:
                     continue
 
                 if symbol not in terminal_variables:
-                    name, next_index = _fresh_variable(used, next_index)
+                    name, next_index = _fresh_variable("T", used, next_index)
                     terminal_variables[symbol] = name
                 converted.append(terminal_variables[symbol])
             result.add(head, converted)
@@ -60,3 +56,34 @@ def to_cnf_form(g: Grammar) -> Grammar:
         result.add(variable, (terminal,))
 
     return result
+
+
+def _decompose_long_bodies(g: Grammar) -> Grammar:
+    """Descompone cada cuerpo largo en una cadena de cuerpos binarios."""
+    used = _symbols(g)
+    next_index = 1
+    result = Grammar(g.start, {head: [] for head in g.productions})
+
+    for head, bodies in g.productions.items():
+        for body in bodies:
+            if len(body) <= 2:
+                result.add(head, body)
+                continue
+
+            current_head = head
+            for symbol in body[:-2]:
+                helper, next_index = _fresh_variable("C", used, next_index)
+                result.add(current_head, (symbol, helper))
+                current_head = helper
+            result.add(current_head, body[-2:])
+
+    return result
+
+
+def to_cnf_form(g: Grammar) -> Grammar:
+    """Convierte una gramática simplificada a Forma Normal de Chomsky.
+
+    Primero sustituye los terminales que aparecen en cuerpos largos y luego
+    descompone los cuerpos de tres o más símbolos. La entrada no se modifica.
+    """
+    return _decompose_long_bodies(_replace_terminals(g))
