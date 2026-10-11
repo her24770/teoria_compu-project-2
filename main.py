@@ -58,6 +58,22 @@ def leaves(tree) -> list[str]:
     return [label] if not children else [x for c in children for x in leaves(c)]
 
 
+def printable_tree(tree, encoding: str | None) -> str:
+    """Usa ramas ASCII si la codificacion de la consola no admite Unicode."""
+    rendered = format_tree(tree)
+    if not encoding:
+        return rendered
+    try:
+        rendered.encode(encoding)
+    except (LookupError, UnicodeEncodeError):
+        return (
+            rendered.replace("├── ", "|-- ")
+            .replace("└── ", "`-- ")
+            .replace("│   ", "|   ")
+        )
+    return rendered
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Validador CYK de frases.")
     parser.add_argument("phrase", nargs="?", help="frase a validar (si falta, se pregunta)")
@@ -102,7 +118,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Tiempo de CYK: {seconds * 1000:.4f} ms")
     if accepted and tree is not None:
         print("\nParse tree:")
-        print(format_tree(tree))
+        print(printable_tree(tree, getattr(sys.stdout, "encoding", None)))
     return 0
 
 
