@@ -7,16 +7,18 @@ guarda un backpointer por variable para reconstruir una derivacion.
 from __future__ import annotations
 
 from time import perf_counter
-from typing import TypeAlias
+from typing import Dict, List, Tuple, Union
 
 from grammar import Grammar
 
 
-Tree: TypeAlias = tuple[str, list["Tree"]]
-TerminalPointer: TypeAlias = tuple[str, str]
-BinaryPointer: TypeAlias = tuple[str, int, str, str]
-Backpointer: TypeAlias = TerminalPointer | BinaryPointer
-Cell: TypeAlias = dict[str, Backpointer]
+# Alias de tipos escritos con ``typing`` para que el modulo funcione desde
+# Python 3.9 (``TypeAlias`` y el operador ``|`` entre tipos requieren 3.10).
+Tree = Tuple[str, List["Tree"]]
+TerminalPointer = Tuple[str, str]
+BinaryPointer = Tuple[str, int, str, str]
+Backpointer = Union[TerminalPointer, BinaryPointer]
+Cell = Dict[str, Backpointer]
 
 
 def _production_indexes(
