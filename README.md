@@ -6,11 +6,11 @@ Teoría de la Computación
 
 - Josue Hernández
 - Juan Daniel Ordóñez
-- José Sánchez
+- José Sanchez
 
 ## Video
 
-Enlace al video: (pegar aquí el enlace)
+Enlace al video: https://youtu.be/3N3fTVYPCzU
 
 ## Descripción
 
