@@ -21,8 +21,10 @@ def to_cnf(g: Grammar) -> Grammar:
     """Simplifica y convierte a CNF. Acepta gramáticas que ya estén en CNF."""
     try:
         from cnf import to_cnf_form
-    except ImportError as error:  # la parte 2 todavía no está integrada
-        raise RuntimeError(
-            "falta cnf.py con to_cnf_form(g) (conversión a CNF, parte 2)"
-        ) from error
+    except ImportError as error:
+        if isinstance(error, ModuleNotFoundError) and error.name == "cnf":
+            raise RuntimeError(
+                "falta cnf.py con to_cnf_form(g) (conversión a CNF, parte 2)"
+            ) from error
+        raise RuntimeError(f"cnf.py existe pero no se pudo importar: {error}") from error
     return to_cnf_form(simplify(g))

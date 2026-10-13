@@ -92,8 +92,11 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     try:
         from cyk import parse
-    except ImportError:
-        print("Error: falta cyk.py con parse(g, tokens) (parte 3)", file=sys.stderr)
+    except ImportError as error:
+        if isinstance(error, ModuleNotFoundError) and error.name == "cyk":
+            print("Error: falta cyk.py con parse(g, tokens) (parte 3)", file=sys.stderr)
+        else:
+            print(f"Error: cyk.py existe pero no se pudo importar: {error}", file=sys.stderr)
         return 2
 
     if args.steps:
